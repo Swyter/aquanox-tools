@@ -15,6 +15,19 @@
 // File Mask: *.bin
 //------------------------------------------------
 
+/*
+gog - dat\version\version_1_18_oem.txt - D7 A9 A0 65 DA CD DB 00
+ste - dat\version\version_1_18_uk.txt  - DD AF 61 AB DE C9 00
+                                         -6 -6 63
+*/
+
+// 64 61 74 5C 76 65 72 73 69 6F 6E 5C 76 65 72 73 69 6F 6E 5F 31 5F 31 38 5F 6F 65 6D 2E 74 78 74 /* "dat\version\version_1_18_oem.txt" in Aqua.exe */
+// B3 D0 E6 D4 BE 98 BC 9E E1 4B 4D BD D8 B0 E0 9C D3 E2 DA CD 75 CE 7B 7C C5 D7 A9 A0 65 DA CD DB /* encrypted filename in aquanox6.pak */
+//                                                                                  33 37 66 55 67 /* subtract the plaintext to the encrypted to get the key; "37fUg" which is suspiciously keyboard-mashing-looking */
+
+// 4F 6F 72 78 48 33 4A 2B 78 DC DF 61 62 4B 6E 29 6A 73 6C 6E 44 6F 4A 44 66 68 44 33 37 66 55 67 /* "h<a7LlÄOorxH3J+xÜßabKn)jslnDoJDfhD37fUgOoÖxH3X2x5Aa5Q7n*öl+üoJ#@" as found in plain text in the .exe, right next to other .pak-related strings */
+
+
 local uint endian_test = ReadUByte(); (endian_test == 0) ? BigEndian() : LittleEndian(); /* swy: if the first byte has data then it probably means that its less significant byte is there; so it's little-endian, a backwards way of storing integers; [07 00 00 00] instead of [00 00 00 07] like you would get on GameCube */
 local uint    ver_test = ReadUInt();
 
