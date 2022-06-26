@@ -27,100 +27,36 @@ ste - dat\version\version_1_18_uk.txt  - DD AF 61 AB DE C9 00
 
 // 4F 6F 72 78 48 33 4A 2B 78 DC DF 61 62 4B 6E 29 6A 73 6C 6E 44 6F 4A 44 66 68 44 33 37 66 55 67 /* "h<a7LlÄOorxH3J+xÜßabKn)jslnDoJDfhD37fUgOoÖxH3X2x5Aa5Q7n*öl+üoJ#@" as found in plain text in the .exe, right next to other .pak-related strings */
 
+local const char key[] = "h<a7LlÄOorxH3J+xÜßabKn)jslnDoJDfhD37fUgOoÖxH3X2x5Aa5Q7n*öl+üoJ#@";
+
 LittleEndian();
 
 struct header
 {
     char magic[12];
-    uint version, a;
+    uint version, file_count;
     char copyright[60];
 } head;
+
+char fourcc[4];
 
 struct entry
 {
     //uint size;
-    char encrypted_filename[132];
-} entr[head.a];
+    unsigned char encrypted_filename[132];
 
 
-local uint endian_test = ReadUByte(); (endian_test == 0) ? BigEndian() : LittleEndian(); /* swy: if the first byte has data then it probably means that its less significant byte is there; so it's little-endian, a backwards way of storing integers; [07 00 00 00] instead of [00 00 00 07] like you would get on GameCube */
-local uint    ver_test = ReadUInt();
+    local ubyte dec[132];
 
-if (!(ver_test == 5 || ver_test == 6 || ver_test == 7))
-{
-    Warning("Unsupported Filelist version: %u", ver_test);
-    Exit(-1);
-}
 
-/* swy: here's the nifty header */
-uint ver, full_size <format=hex>, count; ushort one, zero; uint string_table_offset <format=hex>;
+    local int i = 0;
 
-/* swy: right after the header there we have the file elements, but we skip them for now
-        because we don't have the file paths yet; we'll come back later */
-
-/* <-- */
-
-/* swy: immediately contiguous after the element array; so we shouldn't need the FSeek(), in theory
-        this look-up table exists so that we can find the random string offset from a simple index */
-FSeek(startof(string_table_offset) + string_table_offset);
-uint string_offset[count];
-
-/* swy: jump to the end to decypher the strings beforehand, so that we can use and paste them in the entry list
-        this st struct is going to be hidden by default and only used indirectly; set the hidden=1 to zero */
-local uint i = 0, j = 0;
-local uint cur, nxt;
-local char cur_byte;
-
-local struct {string s; } buf[count];
-
-for (i = 0; i<count; i++)
-{
-    /* swy: grab the absolute start position/offset for our string */
-    cur = startof(string_offset[i]) + string_offset[i];
-
-    /* swy: we need to decode the string beforehand to find its size;
-            here limited to 255-ish characters to avoid looping endlessly */
-    buf[i].s = "";
-
-    for (j = 0; j < 255; j)
+    for (i=0; i<sizeof(dec); i++)
     {
-        /* swy: the cypher works as follows; for each character/byte add to it
-                the constant 0x16 minus the current entry index (which starts from zero)
-                and minus the current character index in the string (which also starts from zero)
-
-                because we are working with individual bytes, they wrap around and we don't lose information
-                --
-          NOTE: version 6, as used in the PS2 version of Athens 2004, is the same but in plain text */
-
-        cur_byte = (ver != 7) ? ReadByte(cur + j) : ((ReadByte(cur + j) + 0x16 - i - j) & 0xff);
-        buf[i].s += (char) cur_byte;
-
-        j++; /* swy: this goes here because sometimes the paths are empty and only contain the final NULL terminator; which we want to include in the count here as part of the buffer; otherwise it's empty */
-
-        if (cur_byte == 0) /* swy: we found the zero/NULL terminator of the C string; we're done */
+        if (encrypted_filename[i] == 0)
             break;
+
+        dec[i] = encrypted_filename[i] - key[i];
     }
 
-    FSeek(cur);
-    struct st { local uint idx = i; char str[j]; } s <optimize=false, read=buf[this.idx].s, hidden=1>; /* swy: kind of a weird hack to make the dynamic storage, debugging and look-up work on 010 Editor */
-
-}
-
-
-/* swy: go backwards/up to parse the file elements/entries (the ones after the header)
-        now that we know the decoded paths */
-
-FSeek(startof(string_table_offset) + sizeof(string_table_offset));
-
-struct elem_t
-{
-    uint len, hashcode <format=hex>, ver, ts <format=hex>, unk_one <format=hex>;
-
-    uint loc_offset <format=hex>,
-         loc_file <format=hex>;
-
-} elem[count] <optimize=false, read=Str("[/] %s", buf[startof(this) / sizeof(this)].s)>;
-
-/* swy: clone the XUtil generator .txt output bit by bit */
-for (i = 0; i<count; i++)
-    Printf("%-72s : Len %10u : Ver %4u : Hash %#x : Ts 0x%08x :  Loc %11x:%03x\r\n", buf[i].s[0] != 0 ? buf[i].s : "  *??? <missing path>", elem[i].len, elem[i].ver, elem[i].hashcode, elem[i].ts, elem[i].loc_offset, elem[i].loc_file);
+} entr[head.file_count] <optimize=false, read=dec>;
