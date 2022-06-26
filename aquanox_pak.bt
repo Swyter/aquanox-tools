@@ -27,6 +27,16 @@ ste - dat\version\version_1_18_uk.txt  - DD AF 61 AB DE C9 00
 
 // 4F 6F 72 78 48 33 4A 2B 78 DC DF 61 62 4B 6E 29 6A 73 6C 6E 44 6F 4A 44 66 68 44 33 37 66 55 67 /* "h<a7LlÄOorxH3J+xÜßabKn)jslnDoJDfhD37fUgOoÖxH3X2x5Aa5Q7n*öl+üoJ#@" as found in plain text in the .exe, right next to other .pak-related strings */
 
+LittleEndian();
+
+struct header
+{
+    char magic[12];
+    uint version, a;
+    char copyright[60];
+    uint b,c,d,e;
+} head;
+
 
 local uint endian_test = ReadUByte(); (endian_test == 0) ? BigEndian() : LittleEndian(); /* swy: if the first byte has data then it probably means that its less significant byte is there; so it's little-endian, a backwards way of storing integers; [07 00 00 00] instead of [00 00 00 07] like you would get on GameCube */
 local uint    ver_test = ReadUInt();
