@@ -1,16 +1,10 @@
 //------------------------------------------------
 //--- 010 Editor v12.0.1 Binary Template
 //
-//      File: Disney's G-Force - Filelist.bin (v6 and v7)
+//      File: AquaNox (2001) package files - dat/pak/*.pak
 //   Authors: Swyter
-//   Version: 2022.04.17
-//   Purpose: Opens the Filelist format for this version of EngineX.
-//            This is used as some kind of index that lets the game know at what offset of
-//            the big Filelist.000 it needs to start to find the matching file. And what size.
-//
-//            Unlike Sphinx and some other earlier games, the file paths are obfuscated/encrypted with
-//            some kind of rolling arithmetic thingie from version 7 onwards. Take a look below.
-//
+//   Version: 2022.06.25
+//   Purpose: Opens and decodes the encrypted file list.
 //  Category: Game
 // File Mask: *.pak
 //  ID Bytes: 4D 41 53 53 49 56 45 46 49 4C 45 00 03 00 00 00
@@ -51,20 +45,20 @@ struct header
     char magic[12];
     uint version, file_count;
     char copyright[60];
-} head;
+} head <open=true>;
 
 char fourcc[4];
 
 local int j = 0;
 
-local uint64 last_offset = 0x54 + (0x84 * head.file_count);
+local uint64 last_offset = sizeof(head) + (0x84 * head.file_count);
 
 struct entry
 {
     //uint size;
     unsigned char encrypted_filename[128];
 
-    union       size_union { uint dec_size; ubyte dec_bytes[4];} size_maybe <optimize=false>;
+    union      size_union { uint dec_size; ubyte dec_bytes[4];} size_maybe <optimize=false>;
     local uint size_dec = 0;
     
 
@@ -79,13 +73,16 @@ struct entry
 
         global_key_idx = global_key_idx % sizeof(key);
 
-        dec[i]       = encrypted_filename[i] - key[(global_key_idx)];
-        keystream[i] = key[(global_key_idx)];
+        dec      [i] = encrypted_filename[i] - key[global_key_idx];
+        keystream[i] =                         key[global_key_idx];
     }
 
-    for (i=0; i<4; i++)
+    global_key_idx = j;
+
+    for (i=0; i<4; i++, global_key_idx++)
     {
-        size_dec |= ((uint)(size_maybe.dec_bytes[i] - keystream[i]) << (i*8));
+        global_key_idx = global_key_idx % sizeof(key);
+        size_dec |= ((uint)(size_maybe.dec_bytes[i] - key[global_key_idx]) << (i*8));
     }
 
     local uint64 save_cur = FTell();
@@ -100,8 +97,14 @@ struct entry
     local uint64 start_offset = last_offset;
     last_offset += size_dec;
 
-    Printf("%5u - %#010x - %s\n", j, size_dec, dec );
+    Printf("%5u - comp. start %#010x - size %#010x - %s\n", j, start_offset, size_dec, dec );
 
     j++;
 
-} entr[head.file_count] <optimize=false, read=dec>;
+} entr[head.file_count] <optimize=false, read=Str("[/] " + dec)>;
+
+
+for (j=0; j<head.file_count; j++)
+{
+    struct { byte t[entr[j].size_dec]; }a;
+};
