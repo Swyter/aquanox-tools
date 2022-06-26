@@ -12,7 +12,8 @@
 //            some kind of rolling arithmetic thingie from version 7 onwards. Take a look below.
 //
 //  Category: Game
-// File Mask: *.bin
+// File Mask: *.pak
+//  ID Bytes: 4D 41 53 53 49 56 45 46 49 4C 45 00 03 00 00 00
 //------------------------------------------------
 
 /*
@@ -49,17 +50,18 @@ struct entry
     unsigned char encrypted_filename[132];
 
 
-    local char dec[132];
+    local char dec[132], keystream[132];
 
 
-    local int i = 0; global_key_idx = 10;
+    local int i = 0; global_key_idx = 2;
 
     for (i=0; i<sizeof(dec); i++)
     {
         if (encrypted_filename[i] == 0)
             break;
 
-        dec[i] = encrypted_filename[i] - key[(global_key_idx)];
+        dec[i]       = encrypted_filename[i] - key[(global_key_idx)];
+        keystream[i] = key[(global_key_idx)];
         global_key_idx = (global_key_idx+1) % 70;
     }
 
