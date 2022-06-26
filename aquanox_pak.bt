@@ -58,7 +58,7 @@ struct entry
     uint size_maybe;
 
 
-    local char dec[132], keystream[132];
+    local char dec[128], keystream[128];
     local int i = 0; global_key_idx = j;
 
     for (i=0; i<sizeof(dec); i++, global_key_idx++)
