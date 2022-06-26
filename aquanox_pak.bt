@@ -30,8 +30,13 @@ ste - dat\version\version_1_18_uk.txt  - DD AF 61 AB DE C9 00
 // 68 3C 61 37 4C 6C C4 4F 6F 72 78 48 33 4A 2B 78 DC DF 61 62 4B 6E 29 6A 73 6C 6E 44 6F 4A 44 66 68 44 33 37 66 55 67 4F 6F D6 78 48 33 58 32 78 35 41 61 35 51 37 6E 2A F6 6C 2B FC 6F 4A 23 40
 
 
+local const char key[64] = {
+    0x68, 0x3C, 0x61, 0x37, 0x4C, 0x6C, 0xC4, 0x4F, 0x6F, 0x72, 0x78, 0x48, 0x33, 0x4A, 0x2B, 0x78,
+    0xDC, 0xDF, 0x61, 0x62, 0x4B, 0x6E, 0x29, 0x6A, 0x73, 0x6C, 0x6E, 0x44, 0x6F, 0x4A, 0x44, 0x66,
+    0x68, 0x44, 0x33, 0x37, 0x66, 0x55, 0x67, 0x4F, 0x6F, 0xD6, 0x78, 0x48, 0x33, 0x58, 0x32, 0x78,
+    0x35, 0x41, 0x61, 0x35, 0x51, 0x37, 0x6E, 0x2A, 0xF6, 0x6C, 0x2B, 0xFC, 0x6F, 0x4A, 0x23, 0x40 
+};
 
-local const char key[70] = "h<a7LlÄOorxH3J+xÜßabKn)jslnDoJDfhD37fUgOoÖxH3X2x5Aa5Q7n*öl+üoJ#@";
 local int global_key_idx = 0;
 LittleEndian();
 
@@ -44,6 +49,8 @@ struct header
 
 char fourcc[4];
 
+local int j = 0;
+
 struct entry
 {
     //uint size;
@@ -51,9 +58,7 @@ struct entry
 
 
     local char dec[132], keystream[132];
-
-
-    local int i = 0; global_key_idx = 2;
+    local int i = 0; global_key_idx = j;
 
     for (i=0; i<sizeof(dec); i++)
     {
@@ -64,5 +69,7 @@ struct entry
         keystream[i] = key[(global_key_idx)];
         global_key_idx = (global_key_idx+1) % 70;
     }
+
+    j++;
 
 } entr[head.file_count] <optimize=false, read=dec>;
