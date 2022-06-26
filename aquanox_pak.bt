@@ -62,7 +62,7 @@ struct entry
     //uint size;
     unsigned char encrypted_filename[128];
 
-    union       size_union { uint dec_size; char dec_bytes[4];} size_maybe <optimize=false>;
+    union       size_union { uint dec_size; ubyte dec_bytes[4];} size_maybe <optimize=false>;
     local union size_union size_dec <optimize=false> ;
     
 
@@ -85,7 +85,11 @@ struct entry
     for (i=0; i<4; i++)
         size_dec.dec_bytes[i] = size_maybe.dec_bytes[i] - keystream[i];
 
-
+    for (i=0; i<4; i++)
+    {
+        size_dec.dec_size |= ((uint)size_dec.dec_bytes[i] << (i*8));
+        Printf("- %02x %u \n", (uint)size_dec.dec_bytes[i] << (i*8), i);
+    }
     j++;
 
 } entr[head.file_count] <optimize=false, read=dec>;
