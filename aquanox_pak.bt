@@ -34,8 +34,13 @@ struct header
     char magic[12];
     uint version, a;
     char copyright[60];
-    uint b,c,d,e;
 } head;
+
+struct entry
+{
+    //uint size;
+    char encrypted_filename[132];
+} entr[head.a];
 
 
 local uint endian_test = ReadUByte(); (endian_test == 0) ? BigEndian() : LittleEndian(); /* swy: if the first byte has data then it probably means that its less significant byte is there; so it's little-endian, a backwards way of storing integers; [07 00 00 00] instead of [00 00 00 07] like you would get on GameCube */
