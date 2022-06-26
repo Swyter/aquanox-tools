@@ -61,17 +61,15 @@ struct entry
     local char dec[132], keystream[132];
     local int i = 0; global_key_idx = j;
 
-    for (i=0; i<sizeof(dec); i++)
+    for (i=0; i<sizeof(dec); i++, global_key_idx++)
     {
         if (encrypted_filename[i] == 0)
             break;
 
-        if (global_key_idx >= 64)
-            global_key_idx = 0;
+        global_key_idx = global_key_idx % sizeof(key);
 
         dec[i]       = encrypted_filename[i] - key[(global_key_idx)];
-        keystream[i] = key[(global_key_idx) % 64];
-        global_key_idx = (global_key_idx+1) % 70;
+        keystream[i] = key[(global_key_idx)];
     }
 
     j++;
