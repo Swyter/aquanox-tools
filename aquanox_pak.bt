@@ -90,15 +90,17 @@ struct entry
 
     local uint64 save_cur = FTell();
     FSeek(last_offset);
-    if (size_dec)
-        byte contents[size_dec];
-    else
-        local uint breakp = 0;
+//    if (size_dec)
+//        byte contents[size_dec];
+//    else
+//        local uint breakp = 0;
     FSeek(save_cur);
 
 
     local uint64 start_offset = last_offset;
     last_offset += size_dec;
+
+    Printf("%5u - %#010x - %s\n", j, size_dec, dec );
 
     j++;
 
