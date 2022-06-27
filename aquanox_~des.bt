@@ -34,9 +34,9 @@ string read_entry(struct entry_t& _thing)
 
     switch (_thing.type_maybe)
     {
-        case type_integer: return Str("  " + _thing.key + " = " + _thing.value.val_str);
-        case type_float:   return Str("  " + _thing.key + " = " + _thing.value.val_str);
-        case type_str:     return Str("  " + _thing.key + " = " + _thing.value.val_str);
+        case type_integer: return SPrintf(buf, " %s = %i",     _thing.key, _thing.value.val_int  ); break;
+        case type_float:   return SPrintf(buf, " %s = %f",     _thing.key, _thing.value.val_float); break;
+        case type_str:     return SPrintf(buf, " %s = \"%s\"", _thing.key, _thing.value.val_str  ); break;
     }
 
     return buf;    
