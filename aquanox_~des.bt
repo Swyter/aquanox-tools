@@ -19,4 +19,10 @@ int parent, pb; char head[5]; int count; uint16 variable_int; uint16 more; uint 
 
 int minus_one; int count; char totalanimation[15];
 
-ubyte type_maybe, size_key, size_value, zero; uint more; char key[size_key]; char value[size_value]; // 5 mesh = 15 old_belial.msh
+
+struct entry_t
+{
+    ubyte type_maybe, size_key, size_value, zero; uint more;
+    char key[size_key];
+    char value[size_value]; // 5 mesh = 15 old_belial.msh
+} entry[5] <optimize=false>;
