@@ -76,11 +76,11 @@ struct entry
         dec      [i] = encrypted_filename[i] - key[global_key_idx];
         keystream[i] =                         key[global_key_idx];
     }
-
-    local uint key_as_little_endian_uint = ((uint) key[(global_key_idx + 0) % sizeof(key)] << (8 * 3)) |
-                                           ((uint) key[(global_key_idx + 1) % sizeof(key)] << (8 * 2)) |
-                                           ((uint) key[(global_key_idx + 2) % sizeof(key)] << (8 * 1)) |
-                                           ((uint) key[(global_key_idx + 3) % sizeof(key)] << (8 * 0));
+    global_key_idx = j;
+    local uint key_as_little_endian_uint = ((uint) key[(global_key_idx + 3) % sizeof(key)] << (8 * 3)) |
+                                           ((uint) key[(global_key_idx + 2) % sizeof(key)] << (8 * 2)) |
+                                           ((uint) key[(global_key_idx + 1) % sizeof(key)] << (8 * 1)) |
+                                           ((uint) key[(global_key_idx + 0) % sizeof(key)] << (8 * 0));
 
     size_dec = size_enc - key_as_little_endian_uint;
 
