@@ -17,13 +17,14 @@ local uint indent_spc = 0;
 
 typedef struct
 {
+    local uint indent = 0;
     uint16 key_len; byte unk_a, unk_b, a, b; int16 c; int next_parent_abs_offset;
     int thong, next_sublevel_abs_offset; char key[key_len];
 } parent_t <read=read_parent>;
 
 string read_parent(struct parent_t& _thing)
 {
-    string buf = ""; SPrintf(buf, "[%s]   (np:%i) (ns:%i)", _thing.key, _thing.next_parent_abs_offset, _thing.next_sublevel_abs_offset);
+    string buf = ""; SPrintf(buf, "%*s[%s]   (np:%i) (ns:%i)", _thing.indent * 4, "", _thing.key, _thing.next_parent_abs_offset, _thing.next_sublevel_abs_offset);
     return buf;
 }
 
@@ -50,9 +51,9 @@ string read_entry(struct entry_t& _thing)
 
     switch (_thing.value_type)
     {
-        case type_integer: return SPrintf(buf, "%*s%s = %i <n:%i>",     _thing.indent * 2, "", _thing.key, _thing.value.val_int,   _thing.next_tag_abs_offset); break;
-        case type_float:   return SPrintf(buf, "%*s%s = %f <n:%i>",     _thing.indent * 2, "", _thing.key, _thing.value.val_float, _thing.next_tag_abs_offset); break;
-        case type_str:     return SPrintf(buf, "%*s%s = \"%s\" <n:%i>", _thing.indent * 2, "", _thing.key, _thing.value.val_str,   _thing.next_tag_abs_offset); break;
+        case type_integer: return SPrintf(buf, "%*s%s = %i <n:%i>",     _thing.indent * 4, "", _thing.key, _thing.value.val_int,   _thing.next_tag_abs_offset); break;
+        case type_float:   return SPrintf(buf, "%*s%s = %f <n:%i>",     _thing.indent * 4, "", _thing.key, _thing.value.val_float, _thing.next_tag_abs_offset); break;
+        case type_str:     return SPrintf(buf, "%*s%s = \"%s\" <n:%i>", _thing.indent * 4, "", _thing.key, _thing.value.val_str,   _thing.next_tag_abs_offset); break;
     }
 
     return buf;    
@@ -71,6 +72,8 @@ while (cur_offset < end_offset)
         next_parent_offset = head.next_parent_abs_offset;
         next_tag_offset = 0;
 
+        head.indent = indent_spc;
+
         if (head.next_sublevel_abs_offset)
             indent_spc++;
     }
@@ -82,7 +85,7 @@ while (cur_offset < end_offset)
         more.indent = indent_spc;
     }
 
-    if (next_parent_offset === -1 &&next_tag_offset == -1)
+    if (next_parent_offset == -1 &&next_tag_offset == -1)
         indent_spc--;
 
     cur_offset = FTell();
