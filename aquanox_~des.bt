@@ -2,11 +2,11 @@
 //--- 010 Editor v12.0.1k Binary Template
 //
 //      File: 
-//   Authors: 
+//   Authors: Swyter
 //   Version: 
 //   Purpose: 
 //  Category: 
-// File Mask: 
+// File Mask: *~.des
 //  ID Bytes: 
 //   History: 
 //------------------------------------------------
@@ -16,19 +16,11 @@ LittleEndian();
 
 struct parent_t
 {
-    uint16 key_len, unk; zero; uint thing;
+    uint16 key_len, unk; uint zero; uint thing;
     int thong, thong_b; char key[key_len];
 };
 
-parent_t head;
-
-
-uint16 ver_a, ver_b; uint zero; uint nineteen;
-
-int parent, pb; char head[5]; int count; uint16 variable_int; uint16 more; uint count_b;
-
-int minus_one; int count_c; char totalanimation[count];
-
+parent_t head[2]<optimize=false>;
 
 struct entry_t
 {
