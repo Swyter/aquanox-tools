@@ -16,21 +16,33 @@ LittleEndian();
 
 struct parent_t
 {
-    uint16 key_len; ybyte unk_a, unk_b, a, b; uint16 c; int next_parent_abs_offset;
+    uint16 key_len; ubyte unk_a, unk_b, a, b; uint16 c; int next_parent_abs_offset;
     int thong, this_tag_ending_abs_offset; char key[key_len];
 };
 
-parent_t head[2]<optimize=false>;
-
 struct entry_t
 {
-    enum<ubyte> { type_integer, type_unk, type_str, container = 0xb } type_maybe; ubyte size_key, size_value, zero; uint more;
+    enum<ubyte> { type_integer, type_unk, type_str, container = 0xb } type_maybe;
+    ubyte size_key, size_value, zero; uint more;
     char key[size_key];
     union { char val_str[size_value]; int val_int; } value; // 5 mesh = 15 old_belial.msh
-} entry[3] <optimize=false>;
-
-parent_t head[1]<optimize=false>;
-
-entry_t mored[3]<optimize=false>; // marax~.des, for now
+};
 
 
+local int64 next_parent_offset = 0;
+local int64 cur_offset = FTell();
+local int64 end_offset = FileSize();
+
+while (cur_offset < end_offset)
+{
+
+    if (cur_offset >= next_parent_offset && next_parent_offset != -1)
+    {
+        parent_t head <optimize=false>;
+        next_parent_offset = head.next_parent_abs_offset;
+    }
+    else
+        entry_t more <optimize=false>; // marax~.des, for now
+
+    cur_offset = FTell();
+}
