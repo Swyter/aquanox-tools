@@ -51,7 +51,7 @@ char fourcc[4];
 
 local int j = 0;
 
-local uint64 last_offset = sizeof(head) + (0x84 * head.file_count);
+local uint64 last_offset = sizeof(head) + 0x4 + (0x84 * head.file_count);
 
 struct entry
 {
@@ -106,5 +106,21 @@ struct entry
 
 for (j=0; j<head.file_count; j++)
 {
-    struct { byte t[entr[j].size_dec]; }a;
+    struct { byte t[entr[j].size_dec]; } a;
 };
+
+
+/*
+    0 - comp. start 0x0000057c - size 0x0004cacd - map\4h1\script\4h1.sco                     57Ch - 0x3c9cd
+    1 - comp. start 0x0004d049 - size 0x00044132 - map\5h2\script\5h2.sco                   3CF49h - 0x44132
+    2 - comp. start 0x0009117b - size 0x0007f4f5 - map\6h3\script\6h3.sco                   8107Bh -
+    3 - comp. start 0x00110670 - size 0x000007c0 - dat\sty\mtake_5n4_e~.des
+    4 - comp. start 0x00110e30 - size 0x00000319 - dat\menu\maplist~.des
+    5 - comp. start 0x00111149 - size 0x000174b4 - dat\menu\performance~.des
+    6 - comp. start 0x001285fd - size 0x0000210a - dat\menu\text~.des
+    7 - comp. start 0x0012a707 - size 0x00000007 - dat\version\version_1_18_oem.txt
+    8 - comp. start 0x0012a70e - size 0x0000064d - ini\control_menu.des                     11876h -     654h
+    9 - comp. start 0x0012ad5b - size 0x000184c5 - gfx\font\font1.tga                       FAA5Bh -   183C5h
+
+
+*/
