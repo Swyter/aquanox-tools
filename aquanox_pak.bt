@@ -84,7 +84,7 @@ struct entry
 
     size_dec = Abs((int64) key_as_little_endian_uint - (int64) size_enc);
 
-    Printf("%u: %8x - %8x = %8x", j % 60, size_enc, key_as_little_endian_uint, size_dec);
+    Printf("%2u: %8x - %8x = %8x |", j % 60, size_enc, key_as_little_endian_uint, size_dec);
 
     local uint64 save_cur = FTell();
 
@@ -100,12 +100,12 @@ struct entry
 
     j++;
 
-} entr[head.file_count] <optimize=false, read=Str("[/] " + dec)>;
+} elem[head.file_count] <optimize=false, read=Str("[/] " + dec)>;
 
 
 for (j=0; j<head.file_count; j++)
 {
-    struct { byte t[entr[j].size_dec]; } a;
+    struct { byte t[elem[j].size_dec]; } a;
 };
 
 

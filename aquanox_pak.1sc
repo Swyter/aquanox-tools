@@ -10,7 +10,7 @@
 
 /* swy: run the original template to fill out the data structures in
         the template results; we depend on this to work */
-RunTemplate("gforce_filelistbin.bt");
+RunTemplate("aquanox_pak.bt");
 
 
 char target_folder[] = InputDirectory("Choose a folder where to extract the EngineX-packed files");
@@ -19,8 +19,8 @@ char filelist_path[] = GetFileName();
 if (target_folder[0] == 0)
     Exit(-1);
 
-Printf("\n\n--\n[+] began extraction of filelist: %s\n" + 
-               "                       at folder: %s\n\n", filelist_path, target_folder);
+Printf("\n\n--\n[+] began extraction of AquaNox .pak: %s\n" + 
+               "                           at folder: %s\n\n", filelist_path, target_folder);
 
 int i = 0, idx_act_file, idx_big_file, len, offset <format=hex>, hashcode <format=hex>;
 char big_file[], opened_big_file[], target_file[];
@@ -28,58 +28,27 @@ char big_file[], opened_big_file[], target_file[];
 idx_act_file = GetFileNum();
 
 /* swy: run for every entry as displayed by our ran template */
-for (i = 0; i < count; i++)
+for (i = 0; i < head.file_count; i++)
 {
-            len = elem[i].len,
-         offset = elem[i].loc_offset;
-       hashcode = elem[i].hashcode;
-    target_file =  buf[i].s;
+            len = elem[i].size_dec,
+         offset = elem[i].start_offset;
+    target_file = elem[i].dec;
 
     /* swy: for some reason, some entries that end up having an asterisk in the XUtil output .txt don't get filenames */
     if (target_file[0] == 0)
-        target_file = "__unk_name_hc_" + Str("%#08x_idx_%u", hashcode, i);
+        target_file = "__unk_name_hc_" + Str("idx_%u", i);
 
-    Printf("[i] %3u, [%#08x] %s (%#x bytes)\n", i, hashcode, target_file, len);
+    Printf("[i] %3u, %s (%#x bytes)\n", i, target_file, len);
 
     /* swy: we can't use virtual drive paths like «X:» on folder names; so pick something else */
     if (target_file[1] == ':')
         target_file[1]  = ';';
 
-    /* swy: build the correct extension from the index; the usual pattern is Filelist.000, but anything goes */
-    big_file = FileNameSetExtension(filelist_path, Str("%03u", elem[i].loc_file));
-
-    /* swy: optimization; to avoid reopening and closing the same Filelist.NNN file for every iteration
-            only pay the price when we need a change (e.g. closing .000 and opening .001) */
-    if (big_file != opened_big_file)
-    {
-        if (idx_big_file)
-        {
-            FileSelect(idx_big_file);
-            FileClose();
-        }
-
-        idx_big_file = FileOpen(big_file);
-        opened_big_file = big_file;
-    }
-
-    /* swy: switch the active context to the Filelist.NNN file and
-            export the right subset/chunk from it */
-    FileSelect(idx_big_file);
-
     target_file = target_folder + "/" + target_file;
-
-    /* swy: are we a GeoFile/EDB? then grab the full size, not only the first part/chunk, the Filelist entry lies */
-    if (ReadUInt(offset + 0) == 0x47454f4d /* 'MOEG' */ && hashcode == ReadUInt(offset + 4) && ReadUInt(offset + 0x14) != len)
-    {
-        len = ReadUInt(offset + 0x14);
-        Printf("[!]        \\_ (Detected EDB file with mismatched size; writing %#x bytes instead)\n\n", len);
-    }
 
     /* swy: dump it like there's no tomorrow ¯\_(ツ)_/¯ */
     MakeDir(FileNameGetPath(target_file));
     FileSaveRange(target_file, offset, len);
-
-    FileSelect(idx_act_file);
 }
 
 FileSelect(idx_big_file); FileClose();
