@@ -13,9 +13,11 @@
 
 LittleEndian();
 
+local uint indent_spc = 0;
+
 typedef struct
 {
-    uint16 key_len; ubyte unk_a, unk_b, a, b; uint16 c; int next_parent_abs_offset;
+    uint16 key_len; byte unk_a, unk_b, a, b; int16 c; int next_parent_abs_offset;
     int thong, next_sublevel_abs_offset; char key[key_len];
 } parent_t <read=read_parent>;
 
@@ -27,6 +29,7 @@ string read_parent(struct parent_t& _thing)
 
 typedef struct
 {
+    local uint indent = 0;
     enum<ubyte> { type_integer, type_float, type_str } value_type;
     ubyte size_key, size_value, pad_maybe; int next_tag_abs_offset;
     char key[size_key];
@@ -47,9 +50,9 @@ string read_entry(struct entry_t& _thing)
 
     switch (_thing.value_type)
     {
-        case type_integer: return SPrintf(buf, " %s = %i (n:%i)",     _thing.key, _thing.value.val_int,   _thing.next_tag_abs_offset); break;
-        case type_float:   return SPrintf(buf, " %s = %f (n:%i)",     _thing.key, _thing.value.val_float, _thing.next_tag_abs_offset); break;
-        case type_str:     return SPrintf(buf, " %s = \"%s\" (n:%i)", _thing.key, _thing.value.val_str,   _thing.next_tag_abs_offset); break;
+        case type_integer: return SPrintf(buf, "%*s%s = %i <n:%i>",     _thing.indent * 2, "", _thing.key, _thing.value.val_int,   _thing.next_tag_abs_offset); break;
+        case type_float:   return SPrintf(buf, "%*s%s = %f <n:%i>",     _thing.indent * 2, "", _thing.key, _thing.value.val_float, _thing.next_tag_abs_offset); break;
+        case type_str:     return SPrintf(buf, "%*s%s = \"%s\" <n:%i>", _thing.indent * 2, "", _thing.key, _thing.value.val_str,   _thing.next_tag_abs_offset); break;
     }
 
     return buf;    
@@ -67,12 +70,20 @@ while (cur_offset < end_offset)
         parent_t head <optimize=false>;
         next_parent_offset = head.next_parent_abs_offset;
         next_tag_offset = 0;
+
+        if (head.next_sublevel_abs_offset)
+            indent_spc++;
     }
     else
     {
         entry_t more <optimize=false>; // marax~.des, for now
         next_tag_offset = more.next_tag_abs_offset;
+
+        more.indent = indent_spc;
     }
+
+    if (next_parent_offset === -1 &&next_tag_offset == -1)
+        indent_spc--;
 
     cur_offset = FTell();
 }
