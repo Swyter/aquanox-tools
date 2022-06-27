@@ -16,8 +16,8 @@ LittleEndian();
 
 struct parent_t
 {
-    uint16 key_len, unk, a, b; int next_parent_abs_offset;
-    int thong, thong_b; char key[key_len];
+    uint16 key_len; ybyte unk_a, unk_b, a, b; uint16 c; int next_parent_abs_offset;
+    int thong, this_tag_ending_abs_offset; char key[key_len];
 };
 
 parent_t head[2]<optimize=false>;
