@@ -25,4 +25,8 @@ struct entry_t
     enum<ubyte> { type_integer, type_unk, type_str } type_maybe; ubyte size_key, size_value, zero; uint more;
     char key[size_key];
     union { char val_str[size_value]; int val_int; } value; // 5 mesh = 15 old_belial.msh
-} entry[5] <optimize=false>;
+} entry[3] <optimize=false>;
+
+byte pad[0x1f];
+
+entry_t mored[2]<optimize=false>; // marax~.des, for now
