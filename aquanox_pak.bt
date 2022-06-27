@@ -58,7 +58,7 @@ struct entry
     //uint size;
     unsigned char encrypted_filename[128];
 
-    union      size_union { uint dec_size; ubyte dec_bytes[4];} size_maybe <optimize=false>;
+    union      size_union { uint dec_size; char dec_bytes[4];} size_maybe <optimize=false>;
     local uint size_dec = 0;
     
 
@@ -78,11 +78,13 @@ struct entry
     }
 
     global_key_idx = j;
-
+    local ubyte tmp;
     for (i=0; i<4; i++, global_key_idx++)
     {
         global_key_idx = global_key_idx % sizeof(key);
-        size_dec |= ((uint)(size_maybe.dec_bytes[i] - key[global_key_idx]) << (i*8));
+
+        tmp = ((uint)(size_maybe.dec_bytes[i] - key[global_key_idx]) & 0xff); Printf(" %02x ", tmp);
+        size_dec |= ((uint32)tmp << (i*8));
     }
 
     local uint64 save_cur = FTell();
@@ -121,6 +123,14 @@ for (j=0; j<head.file_count; j++)
     7 - comp. start 0x0012a707 - size 0x00000007 - dat\version\version_1_18_oem.txt
     8 - comp. start 0x0012a70e - size 0x0000064d - ini\control_menu.des                     11876h -     654h
     9 - comp. start 0x0012ad5b - size 0x000184c5 - gfx\font\font1.tga                       FAA5Bh -   183C5h
+
+
+35 06 65 37
+68 3C 61 37
+
+
+>>> hex( 0x37650635 - 0x37613c68)
+'0x3c9cd'
 
 
 */
