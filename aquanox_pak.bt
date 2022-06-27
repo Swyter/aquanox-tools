@@ -84,12 +84,12 @@ struct entry
 
     size_dec = Abs((int64) key_as_little_endian_uint - (int64) size_enc);
 
-    Printf("%u %x %x %x", j %60, size_enc, key_as_little_endian_uint, size_dec);
+    Printf("%u: %8x - %8x = %8x", j % 60, size_enc, key_as_little_endian_uint, size_dec);
 
     local uint64 save_cur = FTell();
 
     FSeek(last_offset);
-    //byte contents[size_dec];
+    byte contents[size_dec];
     FSeek(save_cur);
 
 
