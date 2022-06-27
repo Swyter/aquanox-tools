@@ -58,7 +58,7 @@ struct entry
     //uint size;
     unsigned char encrypted_filename[128];
 
-    union      size_union { uint dec_size; char dec_bytes[4];} size_maybe <optimize=false>;
+          uint size_enc;
     local uint size_dec = 0;
     
 
@@ -77,22 +77,19 @@ struct entry
         keystream[i] =                         key[global_key_idx];
     }
 
-    global_key_idx = j;
-    local ubyte tmp;
-    for (i=0; i<4; i++, global_key_idx++)
-    {
-        global_key_idx = global_key_idx % sizeof(key);
+    local uint key_as_little_endian_uint = ((uint) key[(global_key_idx + 0) % sizeof(key)] << (8 * 3)) |
+                                           ((uint) key[(global_key_idx + 1) % sizeof(key)] << (8 * 2)) |
+                                           ((uint) key[(global_key_idx + 2) % sizeof(key)] << (8 * 1)) |
+                                           ((uint) key[(global_key_idx + 3) % sizeof(key)] << (8 * 0));
 
-        tmp = ((uint)(size_maybe.dec_bytes[i] - key[global_key_idx]) & 0xff); Printf(" %02x ", tmp);
-        size_dec |= ((uint32)tmp << (i*8));
-    }
+    size_dec = size_enc - key_as_little_endian_uint;
+
+    Printf("%x %x %x", size_enc, key_as_little_endian_uint, size_dec);
 
     local uint64 save_cur = FTell();
+
     FSeek(last_offset);
-//    if (size_dec)
-//        byte contents[size_dec];
-//    else
-//        local uint breakp = 0;
+    //byte contents[size_dec];
     FSeek(save_cur);
 
 
