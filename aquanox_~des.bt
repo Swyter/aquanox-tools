@@ -31,7 +31,7 @@ string read_parent(struct parent_t& _thing)
 typedef struct
 {
     local uint indent = 0;
-    enum<ubyte> { type_integer, type_float, type_str, type_unk, type_float2 } value_type;
+    enum<ubyte> { type_integer, type_float, type_str, type_float3, type_float2 } value_type;
     ubyte size_key, size_value, pad_maybe; int next_tag_abs_offset;
     char key[size_key];
 
@@ -40,9 +40,9 @@ typedef struct
             and alter what comes after it */
     local uint64 save_offset = FTell();
 
-
-    if (value_type == type_float2) struct { float x, y; } value;
-    else                            union { char val_str[size_value]; float val_float; int val_int; } value; // 5 mesh = 15 old_belial.msh
+         if (value_type == type_float3) struct { float x, y, z; } value;
+    else if (value_type == type_float2) struct { float x, y;    } value;
+    else                                 union { char val_str[size_value]; float val_float; int val_int; } value; // 5 mesh = 15 old_belial.msh
 
     FSeek(save_offset + size_value);
 } entry_t <read=read_entry>;
@@ -53,11 +53,11 @@ string read_entry(struct entry_t& _thing)
 
     switch (_thing.value_type)
     {
-        case type_integer: return SPrintf(buf, "%*s%s = %i <n:%i>",     _thing.indent * 4, "", _thing.key, _thing.value.val_int,   _thing.next_tag_abs_offset); break;
-        case type_float:   return SPrintf(buf, "%*s%s = %f <n:%i>",     _thing.indent * 4, "", _thing.key, _thing.value.val_float, _thing.next_tag_abs_offset); break;
-        case type_str:     return SPrintf(buf, "%*s%s = \"%s\" <n:%i>", _thing.indent * 4, "", _thing.key, _thing.value.val_str,   _thing.next_tag_abs_offset); break;
-        case type_float2:  return SPrintf(buf, "%*s%s = %f, %f <n:%i>", _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y, _thing.next_tag_abs_offset); break;
-
+        case type_integer: return SPrintf(buf, "%*s%s = %i <n:%i>",           _thing.indent * 4, "", _thing.key, _thing.value.val_int,                           _thing.next_tag_abs_offset); break;
+        case type_float:   return SPrintf(buf, "%*s%s = %f <n:%i>",           _thing.indent * 4, "", _thing.key, _thing.value.val_float,                         _thing.next_tag_abs_offset); break;
+        case type_str:     return SPrintf(buf, "%*s%s = \"%s\" <n:%i>",       _thing.indent * 4, "", _thing.key, _thing.value.val_str,                           _thing.next_tag_abs_offset); break;
+        case type_float3:  return SPrintf(buf, "%*s%s = {%f, %f, %f} <n:%i>", _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y, _thing.value.z, _thing.next_tag_abs_offset); break;
+        case type_float2:  return SPrintf(buf, "%*s%s = {%f, %f} <n:%i>",     _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y,                 _thing.next_tag_abs_offset); break;
     }
 
     return buf;    
