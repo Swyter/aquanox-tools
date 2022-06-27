@@ -21,14 +21,14 @@ typedef struct
 
 string read_parent(struct parent_t& _thing)
 {
-    string buf = ""; SPrintf(buf, "[%s]                             (np:%i) (ns:%i)", _thing.key, _thing.next_parent_abs_offset, _thing.next_sublevel_abs_offset);
+    string buf = ""; SPrintf(buf, "[%s]   (np:%i) (ns:%i)", _thing.key, _thing.next_parent_abs_offset, _thing.next_sublevel_abs_offset);
     return buf;
 }
 
 typedef struct
 {
-    enum<ubyte> { type_integer, type_float, type_str, container = 0xb } value_type;
-    ubyte size_key, size_value, zero; int next_tag_abs_offset;
+    enum<ubyte> { type_integer, type_float, type_str } value_type;
+    ubyte size_key, size_value, pad_maybe; int next_tag_abs_offset;
     char key[size_key];
 
     /* swy: because the minimum size of the union is the biggest sub-field (4 bytes), we need to manually go back a bit
@@ -47,9 +47,9 @@ string read_entry(struct entry_t& _thing)
 
     switch (_thing.value_type)
     {
-        case type_integer: return SPrintf(buf, " %s = %i",     _thing.key, _thing.value.val_int  ); break;
-        case type_float:   return SPrintf(buf, " %s = %f",     _thing.key, _thing.value.val_float); break;
-        case type_str:     return SPrintf(buf, " %s = \"%s\"", _thing.key, _thing.value.val_str  ); break;
+        case type_integer: return SPrintf(buf, " %s = %i (n:%i)",     _thing.key, _thing.value.val_int,   _thing.next_tag_abs_offset); break;
+        case type_float:   return SPrintf(buf, " %s = %f (n:%i)",     _thing.key, _thing.value.val_float, _thing.next_tag_abs_offset); break;
+        case type_str:     return SPrintf(buf, " %s = \"%s\" (n:%i)", _thing.key, _thing.value.val_str,   _thing.next_tag_abs_offset); break;
     }
 
     return buf;    
