@@ -22,7 +22,7 @@ int minus_one; int count; char totalanimation[15];
 
 struct entry_t
 {
-    ubyte type_maybe, size_key, size_value, zero; uint more;
+    enum<ubyte> { type_integer, type_unk, type_str } type_maybe; ubyte size_key, size_value, zero; uint more;
     char key[size_key];
-    char value[size_value]; // 5 mesh = 15 old_belial.msh
+    union { char val_str[size_value]; int val_int; } value; // 5 mesh = 15 old_belial.msh
 } entry[5] <optimize=false>;
