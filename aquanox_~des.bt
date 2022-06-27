@@ -19,12 +19,12 @@ typedef struct
 {
     local uint indent = 0;
     uint16 key_len; byte unk_a, unk_b, a, b; int16 c; int next_parent_abs_offset;
-    int thong, next_sublevel_abs_offset; char key[key_len];
+    int next_same_level_abs_offset, next_sublevel_abs_offset; char key[key_len];
 } parent_t <read=read_parent>;
 
 string read_parent(struct parent_t& _thing)
 {
-    string buf = ""; SPrintf(buf, "%*s[%s]   (np:%i) (ns:%i)", _thing.indent * 4, "", _thing.key, _thing.next_parent_abs_offset, _thing.next_sublevel_abs_offset);
+    string buf = ""; SPrintf(buf, "%*s[%s]   (np:%i) (nl:%i) (ns:%i)", _thing.indent * 4, "", _thing.key, _thing.next_parent_abs_offset, _thing.next_same_level_abs_offset, _thing.next_sublevel_abs_offset);
     return buf;
 }
 
