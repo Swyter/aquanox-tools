@@ -77,14 +77,14 @@ struct entry
         keystream[i] =                         key[global_key_idx];
     }
 
-    local uint key_as_little_endian_uint = ((uint) (key[(j + 3) % sizeof(key)] & 0xff) << (8 * 3)) |
-                                           ((uint) (key[(j + 2) % sizeof(key)] & 0xff) << (8 * 2)) |
-                                           ((uint) (key[(j + 1) % sizeof(key)] & 0xff) << (8 * 1)) |
-                                           ((uint) (key[(j + 0) % sizeof(key)] & 0xff) << (8 * 0));
+    local uint key_as_little_endian_uint = ((uint) (key[((j % 60) + 3) ] & 0xff) << (8 * 3)) |
+                                           ((uint) (key[((j % 60) + 2) ] & 0xff) << (8 * 2)) |
+                                           ((uint) (key[((j % 60) + 1) ] & 0xff) << (8 * 1)) |
+                                           ((uint) (key[((j % 60) + 0) ] & 0xff) << (8 * 0));
 
     size_dec = Abs((int64) key_as_little_endian_uint - (int64) size_enc);
 
-    Printf("%x %x %x", size_enc, key_as_little_endian_uint, size_dec);
+    Printf("%u %x %x %x", j %60, size_enc, key_as_little_endian_uint, size_dec);
 
     local uint64 save_cur = FTell();
 
