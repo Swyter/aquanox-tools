@@ -1,10 +1,10 @@
 //------------------------------------------------
 //--- 010 Editor v12.0.1 Script File
 //
-//      File: Disney's G-Force - Filelist.bin (extractor script)
+//      File: AquaNox (2001) package files - dat/pak/*.pak
 //   Authors: Swyter
-//   Version: 2022.04.25
-//   Purpose: Unpack files from the virtual filesystem in EngineX games of Filelist version 7.
+//   Version: 2022.06.26
+//   Purpose: Unpack files from the virtual filesystem in the first AquaNox game.
 //  Category: Game
 //------------------------------------------------
 
@@ -13,7 +13,7 @@
 RunTemplate("aquanox_pak.bt");
 
 
-char target_folder[] = InputDirectory("Choose a folder where to extract the EngineX-packed files");
+char target_folder[] = InputDirectory("Choose a folder where to extract the AquaNox .pak file");
 char filelist_path[] = GetFileName();
 
 if (target_folder[0] == 0)
@@ -33,10 +33,6 @@ for (i = 0; i < head.file_count; i++)
             len = elem[i].size_dec,
          offset = elem[i].start_offset;
     target_file = elem[i].dec;
-
-    /* swy: for some reason, some entries that end up having an asterisk in the XUtil output .txt don't get filenames */
-    if (target_file[0] == 0)
-        target_file = "__unk_name_hc_" + Str("idx_%u", i);
 
     Printf("[i] %3u, %s (%#x bytes)\n", i, target_file, len);
 
