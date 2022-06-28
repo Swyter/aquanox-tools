@@ -70,61 +70,59 @@ string read_entry(struct entry_t& _thing)
 
 local uint cur_indent = 0;
 
-local uint sav_indent[4] = {0}; local int sav_ind_idx = 0;
-local uint sav_samlev[4];
+struct block_state { int indent_level, vh, equalh, ve; };
 
-local int64 next_subheader_offset = -1,
-            next_tag_offset = -1,
-            next_same_level_header_offset = 0,
-            next_subentry_offset = -1;
+local struct block_state sav_indent[4]; local int sav_ind_idx = 0;
+
+sav_indent[sav_ind_idx].indent_level = 0;
+sav_indent[sav_ind_idx].equalh = 0;
+
+sav_indent[sav_ind_idx].vh = -1;
+sav_indent[sav_ind_idx].ve = -1;
+
+local int equale = -1;
+
 
 local int64 cur_offset = FTell();
 local int64 end_offset = FileSize();
 
 while (cur_offset < end_offset)
 {
-
-    if (cur_offset >= next_subheader_offset && next_subheader_offset != -1)
-        cur_indent++;
-
-    else if (cur_offset >= next_subentry_offset && next_subentry_offset != -1)
-        cur_indent++;
-
-    if (sav_ind_idx > 0 && cur_offset >= sav_samlev[sav_ind_idx] && more.next_same_lvl == -1)
-        cur_indent = sav_indent[sav_ind_idx--];
-
-    if ((cur_offset >= next_subheader_offset && next_subheader_offset != -1) || next_tag_offset == -1)
+    if (sav_indent[sav_ind_idx].vh == cur_offset || sav_indent[sav_ind_idx].equalh == cur_offset)
     {
         header_t head <optimize=false>;
-
-        next_subheader_offset = head.next_subhead_abs_offset;
-        next_subentry_offset  = head.next_subentry_abs_offset;
-        next_tag_offset = 0;
-
         head.indent = cur_indent;
 
-        if (head.next_samelvl_head_abs_offset != -1)
-        {
-            sav_indent[sav_ind_idx] = cur_indent;
-            sav_samlev[sav_ind_idx++] = head.next_samelvl_head_abs_offset;
-        }
+        sav_ind_idx++;
+
+        sav_indent[sav_ind_idx].vh     = head.next_subhead_abs_offset;
+        sav_indent[sav_ind_idx].equalh = head.next_samelvl_head_abs_offset;
+
+        sav_indent[sav_ind_idx].ve     = head.next_subentry_abs_offset;
+
+        sav_indent[sav_ind_idx].indent_level = cur_indent;
 
         Printf("%*s.\n", cur_indent * 4, "");
 
-
+        cur_indent++;
     }
-    else
+
+    if (sav_indent[sav_ind_idx].ve == cur_offset || equale == cur_offset)
     {
-        entry_t more <optimize=false>;
+        entry_t entr <optimize=false>;
+        entr.indent = cur_indent;
 
-        next_tag_offset = more.next_same_lvl;
-        next_subentry_offset = -1;
-
-        more.indent = cur_indent;
-
+        equale = entr.next_same_lvl;
 
         Printf("%*s.\n", cur_indent * 4, "");
+    }
 
+
+    if ((equale                     == -1 && sav_indent[sav_ind_idx].vh == -1) ||
+        (sav_indent[sav_ind_idx].vh == -1 && sav_indent[sav_ind_idx].ve == -1))
+    {
+        sav_ind_idx--;
+        cur_indent = sav_indent[sav_ind_idx].indent_level;
     }
 
     cur_offset = FTell();
