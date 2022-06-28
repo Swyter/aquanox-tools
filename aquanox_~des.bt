@@ -14,6 +14,8 @@
 LittleEndian();
 
 local uint cur_indent = 0;
+local uint sav_indent[80] = {0}; local int sav_ind_idx = -1;
+local uint sav_samlev[80] = {0};
 
 typedef struct
 {
@@ -63,7 +65,7 @@ string read_entry(struct entry_t& _thing)
     return buf;    
 }
 
-local int64 next_parent_offset = 0, next_tag_offset = 0;
+local int64 next_parent_offset = 0, next_tag_offset = 0, next_same_level_parent_offset = 0;
 local int64 cur_offset = FTell();
 local int64 end_offset = FileSize();
 
@@ -78,6 +80,12 @@ while (cur_offset < end_offset)
 
         head.indent = cur_indent;
 
+        if (head.next_same_level_abs_offset != -1)
+        {
+            sav_indent[++sav_ind_idx] = cur_indent;
+            sav_samlev[  sav_ind_idx] = head.next_same_level_abs_offset;
+        }
+
         if (head.next_sublevel_abs_offset)
             cur_indent++;
     }
@@ -91,6 +99,9 @@ while (cur_offset < end_offset)
 
     if (next_parent_offset == -1 && next_tag_offset == -1)
         cur_indent--;
+
+    if (sav_ind_idx >= 0 && cur_offset >= sav_samlev[sav_ind_idx])
+        cur_indent = sav_indent[sav_ind_idx--];
 
     cur_offset = FTell();
 }
