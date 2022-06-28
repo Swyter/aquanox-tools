@@ -14,8 +14,13 @@
 LittleEndian();
 
 local uint cur_indent = 0;
+
 local uint sav_indent[80] = {0}; local int sav_ind_idx = -1;
 local uint sav_samlev[80] = {0};
+
+
+local uint xav_indent[80] = {0}; local int xav_ind_idx = -1;
+local uint xav_samlev[80] = {0};
 
 typedef struct
 {
@@ -104,8 +109,8 @@ while (cur_offset < end_offset)
         }
         else if (next_subheader_offset != -1)
         {
-            sav_indent[++sav_ind_idx] = cur_indent;
-            sav_samlev[  sav_ind_idx] = next_subheader_offset;
+            xav_indent[++xav_ind_idx] = cur_indent;
+            xav_samlev[  xav_ind_idx] = next_subheader_offset;
         }
 
     }
@@ -117,12 +122,13 @@ while (cur_offset < end_offset)
 
         more.indent = cur_indent;
 
-        if (sav_ind_idx > 0 && more.next_same_lvl == -1)
+        if (sav_ind_idx > 0 && cur_offset >= sav_samlev[sav_ind_idx] && more.next_same_lvl == -1)
             cur_indent = sav_indent[sav_ind_idx--];
+
+        if (xav_ind_idx > 0 && cur_offset >= xav_samlev[xav_ind_idx])
+            cur_indent = xav_indent[xav_ind_idx--];
     }
 
-    if (sav_ind_idx > 0 && cur_offset >= sav_samlev[sav_ind_idx])
-        cur_indent = sav_indent[sav_ind_idx--];
 
     cur_offset = FTell();
 }
