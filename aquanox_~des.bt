@@ -20,8 +20,14 @@ local uint sav_samlev[80] = {0};
 typedef struct
 {
     local uint indent = 0;
-    uint16 key_len; byte unk_a, unk_b, a, b; int16 c; int next_parent_abs_offset;
-    int next_same_level_abs_offset, next_sublevel_abs_offset; char key[key_len];
+
+    uint16 key_len; byte unk_a, unk_b, a, b; int16 c;
+
+    int next_parent_abs_offset,
+        next_same_level_abs_offset,
+        next_sublevel_abs_offset;
+
+    char key[key_len];
 } parent_t <read=read_parent>;
 
 string read_parent(struct parent_t& _thing)
@@ -34,7 +40,7 @@ typedef struct
 {
     local uint indent = 0;
     enum<ubyte> { type_integer, type_float, type_str, type_float3, type_float2 } value_type;
-    ubyte size_key, size_value, pad_maybe; int next_tag_abs_offset;
+    ubyte size_key, size_value, pad_maybe; int next_same_lvl;
     char key[size_key];
 
     /* swy: because the minimum size of the union is the biggest sub-field (4 bytes), we need to manually go back a bit
@@ -55,11 +61,11 @@ string read_entry(struct entry_t& _thing)
 
     switch (_thing.value_type)
     {
-        case type_integer: return SPrintf(buf, "%*s%s = %i <n:%i>",           _thing.indent * 4, "", _thing.key, _thing.value.val_int,                           _thing.next_tag_abs_offset); break;
-        case type_float:   return SPrintf(buf, "%*s%s = %f <n:%i>",           _thing.indent * 4, "", _thing.key, _thing.value.val_float,                         _thing.next_tag_abs_offset); break;
-        case type_str:     return SPrintf(buf, "%*s%s = \"%s\" <n:%i>",       _thing.indent * 4, "", _thing.key, _thing.value.val_str,                           _thing.next_tag_abs_offset); break;
-        case type_float3:  return SPrintf(buf, "%*s%s = {%f, %f, %f} <n:%i>", _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y, _thing.value.z, _thing.next_tag_abs_offset); break;
-        case type_float2:  return SPrintf(buf, "%*s%s = {%f, %f} <n:%i>",     _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y,                 _thing.next_tag_abs_offset); break;
+        case type_integer: return SPrintf(buf, "%*s%s = %i <n:%i>",           _thing.indent * 4, "", _thing.key, _thing.value.val_int,                           _thing.next_same_lvl); break;
+        case type_float:   return SPrintf(buf, "%*s%s = %f <n:%i>",           _thing.indent * 4, "", _thing.key, _thing.value.val_float,                         _thing.next_same_lvl); break;
+        case type_str:     return SPrintf(buf, "%*s%s = \"%s\" <n:%i>",       _thing.indent * 4, "", _thing.key, _thing.value.val_str,                           _thing.next_same_lvl); break;
+        case type_float3:  return SPrintf(buf, "%*s%s = {%f, %f, %f} <n:%i>", _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y, _thing.value.z, _thing.next_same_lvl); break;
+        case type_float2:  return SPrintf(buf, "%*s%s = {%f, %f} <n:%i>",     _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y,                 _thing.next_same_lvl); break;
     }
 
     return buf;    
@@ -86,19 +92,19 @@ while (cur_offset < end_offset)
             sav_samlev[  sav_ind_idx] = head.next_same_level_abs_offset;
         }
 
-        if (head.next_sublevel_abs_offset)
+        if (head.next_same_level_abs_offset != -1 || head.next_same_level_abs_offset != -1)
             cur_indent++;
     }
     else
     {
         entry_t more <optimize=false>; // marax~.des, for now
-        next_tag_offset = more.next_tag_abs_offset;
+        next_tag_offset = more.next_same_lvl;
 
         more.indent = cur_indent;
-    }
 
-    if (next_parent_offset == -1 && next_tag_offset == -1)
-        cur_indent--;
+        if (sav_ind_idx >= 0 && more.next_same_lvl == -1)
+            cur_indent = sav_indent[sav_ind_idx--];
+    }
 
     if (sav_ind_idx >= 0 && cur_offset >= sav_samlev[sav_ind_idx])
         cur_indent = sav_indent[sav_ind_idx--];
