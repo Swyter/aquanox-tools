@@ -102,6 +102,11 @@ while (cur_offset < end_offset)
             sav_indent[++sav_ind_idx] = cur_indent;
             sav_samlev[  sav_ind_idx] = head.next_samelvl_head_abs_offset;
         }
+        else if (next_subheader_offset != -1)
+        {
+            sav_indent[++sav_ind_idx] = cur_indent;
+            sav_samlev[  sav_ind_idx] = next_subheader_offset;
+        }
 
     }
     else
@@ -116,7 +121,7 @@ while (cur_offset < end_offset)
             cur_indent = sav_indent[sav_ind_idx--];
     }
 
-    if (sav_ind_idx >= 0 && cur_offset >= sav_samlev[sav_ind_idx])
+    if (sav_ind_idx > 0 && cur_offset >= sav_samlev[sav_ind_idx])
         cur_indent = sav_indent[sav_ind_idx--];
 
     cur_offset = FTell();
