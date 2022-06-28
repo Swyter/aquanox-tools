@@ -13,15 +13,6 @@
 
 LittleEndian();
 
-local uint cur_indent = 0;
-
-local uint sav_indent[80] = {0}; local int sav_ind_idx = -1;
-local uint sav_samlev[80] = {0};
-
-
-local uint xav_indent[80] = {0}; local int xav_ind_idx = -1;
-local uint xav_samlev[80] = {0};
-
 typedef struct
 {
     local uint indent = 0;
@@ -66,15 +57,21 @@ string read_entry(struct entry_t& _thing)
 
     switch (_thing.value_type)
     {
-        case type_integer: return SPrintf(buf, "%*s%s = %i <n:%i>",           _thing.indent * 4, "", _thing.key, _thing.value.val_int,                           _thing.next_same_lvl); break;
-        case type_float:   return SPrintf(buf, "%*s%s = %f <n:%i>",           _thing.indent * 4, "", _thing.key, _thing.value.val_float,                         _thing.next_same_lvl); break;
-        case type_str:     return SPrintf(buf, "%*s%s = \"%s\" <n:%i>",       _thing.indent * 4, "", _thing.key, _thing.value.val_str,                           _thing.next_same_lvl); break;
-        case type_float3:  return SPrintf(buf, "%*s%s = {%f, %f, %f} <n:%i>", _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y, _thing.value.z, _thing.next_same_lvl); break;
-        case type_float2:  return SPrintf(buf, "%*s%s = {%f, %f} <n:%i>",     _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y,                 _thing.next_same_lvl); break;
+        case type_integer: return SPrintf(buf, "%*s%s = %i <=e:%i>",           _thing.indent * 4, "", _thing.key, _thing.value.val_int,                           _thing.next_same_lvl); break;
+        case type_float:   return SPrintf(buf, "%*s%s = %f <=e:%i>",           _thing.indent * 4, "", _thing.key, _thing.value.val_float,                         _thing.next_same_lvl); break;
+        case type_str:     return SPrintf(buf, "%*s%s = \"%s\" <=e:%i>",       _thing.indent * 4, "", _thing.key, _thing.value.val_str,                           _thing.next_same_lvl); break;
+        case type_float3:  return SPrintf(buf, "%*s%s = {%f, %f, %f} <=e:%i>", _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y, _thing.value.z, _thing.next_same_lvl); break;
+        case type_float2:  return SPrintf(buf, "%*s%s = {%f, %f} <=e:%i>",     _thing.indent * 4, "", _thing.key, _thing.value.x, _thing.value.y,                 _thing.next_same_lvl); break;
     }
 
     return buf;    
 }
+
+
+local uint cur_indent = 0;
+
+local uint sav_indent[4] = {0}; local int sav_ind_idx = 0;
+local uint sav_samlev[4];
 
 local int64 next_subheader_offset = -1,
             next_tag_offset = -1,
@@ -93,16 +90,13 @@ while (cur_offset < end_offset)
     else if (cur_offset >= next_subentry_offset && next_subentry_offset != -1)
         cur_indent++;
 
-        if (sav_ind_idx > 0 && cur_offset >= sav_samlev[sav_ind_idx] && more.next_same_lvl == -1)
-            cur_indent = sav_indent[sav_ind_idx--];
-
-        if (xav_ind_idx > 0 && cur_offset >= xav_samlev[xav_ind_idx])
-            cur_indent = xav_indent[xav_ind_idx--];
-
+    if (sav_ind_idx > 0 && cur_offset >= sav_samlev[sav_ind_idx] && more.next_same_lvl == -1)
+        cur_indent = sav_indent[sav_ind_idx--];
 
     if ((cur_offset >= next_subheader_offset && next_subheader_offset != -1) || next_tag_offset == -1)
     {
         header_t head <optimize=false>;
+
         next_subheader_offset = head.next_subhead_abs_offset;
         next_subentry_offset  = head.next_subentry_abs_offset;
         next_tag_offset = 0;
@@ -111,31 +105,47 @@ while (cur_offset < end_offset)
 
         if (head.next_samelvl_head_abs_offset != -1)
         {
-            sav_indent[++sav_ind_idx] = cur_indent;
-            sav_samlev[  sav_ind_idx] = head.next_samelvl_head_abs_offset;
+            sav_indent[sav_ind_idx] = cur_indent;
+            sav_samlev[sav_ind_idx++] = head.next_samelvl_head_abs_offset;
         }
-        else if (next_subheader_offset != -1)
-        {
-            xav_indent[++xav_ind_idx] = cur_indent;
-            xav_samlev[  xav_ind_idx] = next_subheader_offset;
-        }
+
+        Printf("%*s.\n", cur_indent * 4, "");
+
 
     }
     else
     {
-        entry_t more <optimize=false>; // marax~.des, for now
+        entry_t more <optimize=false>;
+
         next_tag_offset = more.next_same_lvl;
         next_subentry_offset = -1;
 
         more.indent = cur_indent;
 
-        if (sav_ind_idx > 0 && cur_offset >= sav_samlev[sav_ind_idx] && more.next_same_lvl == -1)
-            cur_indent = sav_indent[sav_ind_idx--];
 
-        if (xav_ind_idx > 0 && cur_offset >= xav_samlev[xav_ind_idx])
-            cur_indent = xav_indent[xav_ind_idx--];
+        Printf("%*s.\n", cur_indent * 4, "");
+
     }
-
 
     cur_offset = FTell();
 }
+
+/*
+
+# swy: indent on a new child level
+if vh is offs or ve is offs:
+    indent++
+
+# swy: create a new entry/header if we arrive at an entry/header offset
+if ve is offs or =e is offs:
+    new entry
+    push vh, =h, ve to stack, save indent level
+
+if vh is offs or =h is offs:
+    new header
+
+# swy: end of header entries
+if =e is -1:
+    pop stack, restore indent level
+
+*/
