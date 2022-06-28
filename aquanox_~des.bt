@@ -23,16 +23,16 @@ typedef struct
 
     uint16 key_len; byte unk_a, unk_b, a, b; int16 c;
 
-    int next_parent_abs_offset,
-        next_same_level_abs_offset,
-        next_sublevel_abs_offset;
+    int next_subhead_abs_offset,      /* swy: next head in a child level */
+        next_samelvl_head_abs_offset, /* swy: next head in the same indentation level */
+        next_subentry_abs_offset;     /* swy: next plain entry in a child level */
 
     char key[key_len];
-} parent_t <read=read_parent>;
+} header_t <read=read_header>;
 
-string read_parent(struct parent_t& _thing)
+string read_header(struct header_t& _thing)
 {
-    string buf = ""; SPrintf(buf, "%*s[%s]   (np:%i) (nl:%i) (ns:%i)", _thing.indent * 4, "", _thing.key, _thing.next_parent_abs_offset, _thing.next_same_level_abs_offset, _thing.next_sublevel_abs_offset);
+    string buf = ""; SPrintf(buf, "%*s[%s]   (vh:%i) (=h:%i) (ve:%i)", _thing.indent * 4, "", _thing.key, _thing.next_subhead_abs_offset, _thing.next_samelvl_head_abs_offset, _thing.next_subentry_abs_offset);
     return buf;
 }
 
@@ -71,28 +71,28 @@ string read_entry(struct entry_t& _thing)
     return buf;    
 }
 
-local int64 next_parent_offset = 0, next_tag_offset = 0, next_same_level_parent_offset = 0;
+local int64 next_header_offset = 0, next_tag_offset = 0, next_same_level_header_offset = 0;
 local int64 cur_offset = FTell();
 local int64 end_offset = FileSize();
 
 while (cur_offset < end_offset)
 {
 
-    if ((cur_offset >= next_parent_offset && next_parent_offset != -1) || next_tag_offset == -1)
+    if ((cur_offset >= next_header_offset && next_header_offset != -1) || next_tag_offset == -1)
     {
-        parent_t head <optimize=false>;
-        next_parent_offset = head.next_parent_abs_offset;
+        header_t head <optimize=false>;
+        next_header_offset = head.next_subhead_abs_offset;
         next_tag_offset = 0;
 
         head.indent = cur_indent;
 
-        if (head.next_same_level_abs_offset != -1)
+        if (head.next_samelvl_head_abs_offset != -1)
         {
             sav_indent[++sav_ind_idx] = cur_indent;
-            sav_samlev[  sav_ind_idx] = head.next_same_level_abs_offset;
+            sav_samlev[  sav_ind_idx] = head.next_samelvl_head_abs_offset;
         }
 
-        if (head.next_same_level_abs_offset != -1 || head.next_same_level_abs_offset != -1)
+        if (head.next_samelvl_head_abs_offset != -1 || head.next_samelvl_head_abs_offset != -1)
             cur_indent++;
     }
     else
