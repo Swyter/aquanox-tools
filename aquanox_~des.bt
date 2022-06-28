@@ -132,22 +132,29 @@ while (cur_offset < end_offset)
 
 /*
 
-# swy: indent on a new child level, the v means downward arrow. h is header, and e entry
-if vh is offs or ve is offs:
-    indent++
+# the v means downward arrow. h is header, and e entry
 
-# swy: create a new entry/header if we arrive at an entry/header offset
-#      the only way to indent is to create a new level hosted by a parent header
-if ve is offs or =e is offs:
-    new entry
-    push vh, =h, ve to stack, save indent level
+indent set to zero
+=h is offset zero # the first element to parse is always the HEAD-called header
+vh and =e are -1
 
-# swy: we don't need to save =e across levels because entries only form part of a single level
-if vh is offs or =h is offs:
-    new header
-
-# swy: end of header entries
-if =e is -1 or =h is -1:
-    pop stack, restore indent level
+while not file end:
+    # swy: create a new entry/header if we arrive at an entry/header offset
+    #      the only way to indent is to create a new level hosted by a parent header
+    if vh is offs or =h is offs:
+        new header
+        push vh, =h, ve to stack, save indent level
+    
+        # swy: indent on a new child level,
+        indent++
+    
+    # swy: we don't need to save =e across levels because entries only form part of a single level
+    if ve is offs or =e is offs:
+        new entry
+        overwrite =e with latest one # save it for the next entry
+    
+    # swy: reached end of header entries, or the header has no child headers/entries at all, go back a level
+    if (=e is -1 and vh is -1) or (vh is -1 and ve is -1):
+        pop stack, restore indent level
 
 */
