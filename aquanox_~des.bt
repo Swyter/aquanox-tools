@@ -71,20 +71,22 @@ string read_entry(struct entry_t& _thing)
     return buf;    
 }
 
-local int64 next_subheader_offset = 0, next_tag_offset = 0, next_same_level_header_offset = 0, next_subentry_offset = 0;
+local int64 next_subheader_offset = -1,
+            next_tag_offset = -1,
+            next_same_level_header_offset = 0,
+            next_subentry_offset = -1;
+
 local int64 cur_offset = FTell();
 local int64 end_offset = FileSize();
 
 while (cur_offset < end_offset)
 {
-    if (next_subheader_offset != -1 && cur_offset >= next_subheader_offset)
-    {
-        next_subheader_offset = 0; cur_indent++;
-    }
-    else if (next_subentry_offset != -1 && cur_offset >= next_subentry_offset)
-    {
-        next_subentry_offset = -1; cur_indent++;
-    }
+
+    if (cur_offset >= next_subheader_offset && next_subheader_offset != -1)
+        cur_indent++;
+
+    else if (cur_offset >= next_subentry_offset && next_subentry_offset != -1)
+        cur_indent++;
 
     if ((cur_offset >= next_subheader_offset && next_subheader_offset != -1) || next_tag_offset == -1)
     {
@@ -100,15 +102,17 @@ while (cur_offset < end_offset)
             sav_indent[++sav_ind_idx] = cur_indent;
             sav_samlev[  sav_ind_idx] = head.next_samelvl_head_abs_offset;
         }
+
     }
     else
     {
         entry_t more <optimize=false>; // marax~.des, for now
         next_tag_offset = more.next_same_lvl;
+        next_subentry_offset = -1;
 
         more.indent = cur_indent;
 
-        if (sav_ind_idx >= 0 && more.next_same_lvl == -1)
+        if (sav_ind_idx > 0 && more.next_same_lvl == -1)
             cur_indent = sav_indent[sav_ind_idx--];
     }
 
