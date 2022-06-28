@@ -93,6 +93,13 @@ while (cur_offset < end_offset)
     else if (cur_offset >= next_subentry_offset && next_subentry_offset != -1)
         cur_indent++;
 
+        if (sav_ind_idx > 0 && cur_offset >= sav_samlev[sav_ind_idx] && more.next_same_lvl == -1)
+            cur_indent = sav_indent[sav_ind_idx--];
+
+        if (xav_ind_idx > 0 && cur_offset >= xav_samlev[xav_ind_idx])
+            cur_indent = xav_indent[xav_ind_idx--];
+
+
     if ((cur_offset >= next_subheader_offset && next_subheader_offset != -1) || next_tag_offset == -1)
     {
         header_t head <optimize=false>;
