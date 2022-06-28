@@ -72,7 +72,7 @@ local uint cur_indent = 0;
 
 struct block_state { int indent_level, vh, equalh, ve; };
 
-local struct block_state sav_indent[4]; local int sav_ind_idx = 0;
+local struct block_state sav_indent[10]; local int sav_ind_idx = 0;
 
 sav_indent[sav_ind_idx].indent_level = 0;
 sav_indent[sav_ind_idx].equalh = 0;
@@ -82,13 +82,17 @@ sav_indent[sav_ind_idx].ve = -1;
 
 local int equale = -1;
 
+local int last_equalh = -1;
 
-local int64 cur_offset = FTell();
+local int64 cur_offset = FTell(), prev_offset;
 local int64 end_offset = FileSize();
 
 while (cur_offset < end_offset)
 {
-    if (sav_indent[sav_ind_idx].vh == cur_offset || sav_indent[sav_ind_idx].equalh == cur_offset)
+    prev_offset = FTell();
+
+
+    if (sav_indent[sav_ind_idx].vh == cur_offset || sav_indent[sav_ind_idx].equalh == cur_offset || last_equalh == cur_offset)
     {
         header_t head <optimize=false>;
         head.indent = cur_indent;
@@ -98,6 +102,8 @@ while (cur_offset < end_offset)
         sav_indent[sav_ind_idx].vh     = head.next_subhead_abs_offset;
         sav_indent[sav_ind_idx].equalh = head.next_samelvl_head_abs_offset;
 
+        last_equalh = sav_indent[sav_ind_idx].equalh;
+
         sav_indent[sav_ind_idx].ve     = head.next_subentry_abs_offset;
 
         sav_indent[sav_ind_idx].indent_level = cur_indent;
@@ -105,6 +111,8 @@ while (cur_offset < end_offset)
         Printf("%*s.\n", cur_indent * 4, "");
 
         cur_indent++;
+
+        cur_offset = FTell();
     }
 
     if (sav_indent[sav_ind_idx].ve == cur_offset || equale == cur_offset)
@@ -126,6 +134,9 @@ while (cur_offset < end_offset)
     }
 
     cur_offset = FTell();
+
+    if (prev_offset == cur_offset)
+        break;
 }
 
 /*
