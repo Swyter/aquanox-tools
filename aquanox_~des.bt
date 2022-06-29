@@ -1,14 +1,12 @@
 //------------------------------------------------
 //--- 010 Editor v12.0.1k Binary Template
 //
-//      File: 
+//      File: AquaNox (2001) descriptor files - *.des
 //   Authors: Swyter
-//   Version: 
-//   Purpose: 
-//  Category: 
+//   Version: 2022.06.26
+//   Purpose: Decoder and recursive block displayer for this (mega-funkily terribly-designed) binary configuration format
+//  Category: Game
 // File Mask: *~.des
-//  ID Bytes: 
-//   History: 
 //------------------------------------------------
 
 LittleEndian();
