@@ -7,11 +7,11 @@
 //   Purpose: Decode this binary mesh file format.
 //  Category: Game
 // File Mask: *.msb
-//  ID Bytes: 00 02 02 00 00 00 00 02
+//  ID Bytes: 00 02
 //------------------------------------------------
 
 LittleEndian();
 
-uint magic, two, count, thong;
+ushort a, b; uint two, count, thong;
 struct { float x, y, z; float nx, ny, nz; uint vtx_color <format=hex>; float u, v; int unk_count; } point[count];
-struct { ushort a,b,c; } triangle[thong /(2.f/3)];
+struct { ushort a,b,c; } triangle[8];
