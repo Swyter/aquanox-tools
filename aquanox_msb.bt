@@ -12,7 +12,7 @@
 
 LittleEndian();
 
-ushort two_unk <format=hex>, mesh_count; ushort unk;
+ushort unk_big_endian_two_head <format=hex>; uint mesh_count;
 
 struct mesh_t
 {
