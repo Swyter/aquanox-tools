@@ -12,10 +12,16 @@
 
 LittleEndian();
 
-ushort a, mesh_count; uint unk_big_endian_two<format=hex>, count, ceunt;
-struct { float x, y, z; float nx, ny, nz; uint vtx_color <format=hex>; float u, v; int unk_count; } point[count];
-struct { ushort a,b,c,d;  } triangle[ceunt];
+ushort a, mesh_count; uint unk_big_endian_two <format=hex>;
 
-ushort two; uint efff, a; ushort e, seven; float one; char texture_name[10]; char cruft[180];
+struct mesh_t
+{
+    uint count, ceunt;
+    struct { float x, y, z; float nx, ny, nz; uint vtx_color <format=hex>; float u, v; int unk_count; } point[count];
+    struct { ushort a,b,c,d;  } triangle[ceunt];
+    
+    ushort two; uint efff, a; ushort e, seven; float one; char texture_name[10]; char cruft[180];
+} mesh[mesh_count] <optimize=false>;
+
 //>>> ((1088/2))/4
 //136.0
