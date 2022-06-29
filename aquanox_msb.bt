@@ -12,6 +12,10 @@
 
 LittleEndian();
 
-ushort a, b; uint two, count, thong;
+ushort a, mesh_count; uint unk_big_endian_two<format=hex>, count, ceunt;
 struct { float x, y, z; float nx, ny, nz; uint vtx_color <format=hex>; float u, v; int unk_count; } point[count];
-struct { ushort a,b,c; } triangle[8];
+struct { ushort a,b,c,d;  } triangle[ceunt];
+
+
+//>>> ((1088/2))/4
+//136.0
