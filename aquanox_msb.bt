@@ -12,7 +12,8 @@
 
 LittleEndian();
 
-uint magic, two, thing, thong;
+uint magic, two, count, thong;
+struct { byte a[40]; }triangle[count];
 
 float a[300];
 float x,y,z;
