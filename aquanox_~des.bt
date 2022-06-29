@@ -75,7 +75,7 @@ struct block_state { int indent_level, vh, equalh, ve; };
 local struct block_state sav_indent[10]; local int sav_ind_idx = 0;
 
 sav_indent[sav_ind_idx].indent_level = 0;
-//sav_indent[sav_ind_idx].equalh = 0;
+sav_indent[sav_ind_idx].equalh = 0;
 
 sav_indent[sav_ind_idx].vh = -1;
 sav_indent[sav_ind_idx].ve = -1;
@@ -90,25 +90,29 @@ while (cur_offset < end_offset)
 {
     prev_offset = FTell();
 
-
-    if (sav_indent[sav_ind_idx].vh == cur_offset || equalh == cur_offset)
+    if (sav_indent[sav_ind_idx].vh == cur_offset || sav_indent[sav_ind_idx].equalh == cur_offset)
     {
+        if (sav_indent[sav_ind_idx].equalh == cur_offset)
+        {
+            sav_indent[sav_ind_idx].equalh = -1;
+        }
+
         header_t head <optimize=false>;
         head.indent = cur_indent;
 
+        Printf("%*s.\n", cur_indent * 4, "");
+
         sav_ind_idx++;
+        cur_indent++;
 
         sav_indent[sav_ind_idx].vh     = head.next_subhead_abs_offset;
-        equalh = head.next_samelvl_head_abs_offset;
+        sav_indent[sav_ind_idx].equalh = head.next_samelvl_head_abs_offset;
 
         sav_indent[sav_ind_idx].ve     = head.next_subentry_abs_offset;
 
         sav_indent[sav_ind_idx].indent_level = cur_indent;
 
-        Printf("%*s.\n", cur_indent * 4, "");
-
-        cur_indent++;
-
+        /* swy: update the current offset to that we can create a new entry in this loop right afterwards */
         cur_offset = FTell();
     }
 
@@ -123,16 +127,24 @@ while (cur_offset < end_offset)
     }
 
 
-    if ((equale                     == -1 && sav_indent[sav_ind_idx].vh == -1)) //|| //    (sav_indent[sav_ind_idx].vh == -1 && sav_indent[sav_ind_idx].ve == -1))
+    cur_offset = FTell();
+
+    if ((equale == -1 && sav_indent[sav_ind_idx].vh == -1 && sav_indent[sav_ind_idx].equalh == -1)) //|| //    (sav_indent[sav_ind_idx].vh == -1 && sav_indent[sav_ind_idx].ve == -1))
     {
             sav_ind_idx--;
             cur_indent = sav_indent[sav_ind_idx].indent_level;
+
+            if (sav_indent[sav_ind_idx].equalh == cur_offset)
+            {
+                cur_indent--;
+            }
     }
+    else
+    {
 
-    cur_offset = FTell();
-
-    if (prev_offset == cur_offset)
-        break;
+        if (prev_offset == cur_offset && sav_indent[sav_ind_idx].equalh != cur_offset)
+            break;
+    }
 }
 
 /*
