@@ -92,6 +92,10 @@ void pop_stack()
     sav_ind_idx--;
     cur_indent = sav_indent[sav_ind_idx].indent_level;
 
+    /* swy: important; save the offset to the next header of the same level;
+            for some reason they decided to store it in the previous block, even if it's part of the same parent context
+            and in our implementation it would go out of scope after popping the stack, so carry it with us so that we
+            can still know if there's another header right after the end of the block instead of returning */
     sav_indent[sav_ind_idx].prev_equalh = sav_indent[sav_ind_idx + 1].equalh;
 
     Printf("%*s-  (set stack: %u -> %u)\n", cur_indent * 4, "", sav_ind_idx + 1, sav_ind_idx);
@@ -165,9 +169,15 @@ vh and =e are -1
 while not file end:
     # swy: create a new entry/header if we arrive at an entry/header offset
     #      the only way to indent is to create a new level hosted by a parent header
-    if vh is offs or =h is offs:
+    if vh is offs or =h is offs or prev=h is offs:
+        if =h is offs:
+            set =h to -1
+            pop stack, restore indent level
+            set prev=h to =h
+            
         new header
         push vh, =h, ve to stack, save indent level
+        reset prev=h
     
         # swy: indent on a new child level,
         indent++
@@ -180,5 +190,6 @@ while not file end:
     # swy: reached end of header entries, or the header has no child headers/entries at all, go back a level
     if (=e is -1 and vh is -1) or (vh is -1 and ve is -1):
         pop stack, restore indent level
+        set prev=h to =h
 
 */
