@@ -21,13 +21,26 @@ struct head_t
 struct mesh_t
 {
     ushort unk_big_endian_two_head <format=hex>;
-    uint count, ceunt;
-    struct { float x, y, z; float nx, ny, nz; uint vtx_color <format=hex>; float u, v; int unk_count; } point[count];
-    struct { ushort a,b,c,d;  } triangle[ceunt];
+    uint point_count, poly_count;
+    struct { float x, y, z; float nx, ny, nz; uint vtx_color <format=hex>; float u, v; int unk_count; } point[point_count];
+    struct { ushort a,b,c,d;  } poly[poly_count];
     
-    ushort two; uint efff <format=hex>, a; ushort e;
+    ushort unk_big_endian_two_head <format=hex>; uint efff <format=hex>, a; ushort e;
 
-    struct { ushort seven; float one; string texture_name; byte pad[3]; uint cruft[14]; uint zero; ushort ff; } thing[2]<optimize=false>;
+    struct
+    {
+        ushort seven; float one;
+
+        if (ReadUInt() == 0)
+            char empty;
+        else
+            char texture_name [9]; 
+
+
+        char pad[3];
+        int series[14]; uint zero; ushort ff;
+
+    } thing[2]<optimize=false>;
 
 } mesh[head.mesh_count] <optimize=false>;
 
