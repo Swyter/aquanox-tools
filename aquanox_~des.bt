@@ -70,9 +70,9 @@ string read_entry(struct entry_t& _thing)
 
 local uint cur_indent = 0;
 
-struct block_state { int indent_level, vh, equalh, ve; };
+struct block_state { int indent_level, vh, equalh, ve, prev_equalh; };
 
-local struct block_state sav_indent[10]; local int sav_ind_idx = 0;
+local struct block_state sav_indent[5]; local int sav_ind_idx = 0;
 
 sav_indent[sav_ind_idx].indent_level = 0;
 sav_indent[sav_ind_idx].equalh = 0;
@@ -90,11 +90,24 @@ while (cur_offset < end_offset)
 {
     prev_offset = FTell();
 
-    if (sav_indent[sav_ind_idx].vh == cur_offset || sav_indent[sav_ind_idx].equalh == cur_offset)
+    if (sav_indent[sav_ind_idx].vh == cur_offset || sav_indent[sav_ind_idx].equalh == cur_offset || sav_indent[sav_ind_idx].prev_equalh == cur_offset)
     {
-        if (sav_indent[sav_ind_idx].equalh == cur_offset)
+        if (sav_indent[sav_ind_idx].equalh == cur_offset && cur_offset != 0)
         {
             sav_indent[sav_ind_idx].equalh = -1;
+
+            sav_ind_idx--;
+
+            cur_indent = sav_indent[sav_ind_idx].indent_level;
+
+            sav_indent[sav_ind_idx].prev_equalh = sav_indent[sav_ind_idx + 1].equalh;
+
+            //if (sav_indent[sav_ind_idx].equalh == cur_offset)
+            //{
+            //    cur_indent--;
+            //}
+
+            Printf("%*s-  (set stack: %u -> %u)\n", cur_indent * 4, "", sav_ind_idx + 1, sav_ind_idx);
         }
 
         header_t head <optimize=false>;
@@ -111,6 +124,8 @@ while (cur_offset < end_offset)
         sav_indent[sav_ind_idx].ve     = head.next_subentry_abs_offset;
 
         sav_indent[sav_ind_idx].indent_level = cur_indent;
+
+        sav_indent[sav_ind_idx].prev_equalh = -666;
 
         /* swy: update the current offset to that we can create a new entry in this loop right afterwards */
         cur_offset = FTell();
@@ -129,15 +144,17 @@ while (cur_offset < end_offset)
 
     cur_offset = FTell();
 
-    if ((equale == -1 && sav_indent[sav_ind_idx].vh == -1 && sav_indent[sav_ind_idx].equalh == -1)) //|| //    (sav_indent[sav_ind_idx].vh == -1 && sav_indent[sav_ind_idx].ve == -1))
+    if (equale == -1 && sav_indent[sav_ind_idx].vh == -1)// && sav_indent[sav_ind_idx].equalh == -1)
     {
             sav_ind_idx--;
             cur_indent = sav_indent[sav_ind_idx].indent_level;
 
-            if (sav_indent[sav_ind_idx].equalh == cur_offset)
-            {
-                cur_indent--;
-            }
+            sav_indent[sav_ind_idx].prev_equalh = sav_indent[sav_ind_idx + 1].equalh;
+
+            //if (sav_indent[sav_ind_idx].equalh == cur_offset)
+            //{
+            //    cur_indent--;
+            //}
 
             Printf("%*s-  (set stack: %u -> %u)\n", cur_indent * 4, "", sav_ind_idx + 1, sav_ind_idx);
     }
