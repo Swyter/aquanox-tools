@@ -13,5 +13,5 @@
 LittleEndian();
 
 uint magic, two, count, thong;
-struct { float x,y,z; float a,b,c; uint fff <format=hex>; float t,f; int count; }vtx[count];
-struct { ushort a,b,c; } triangle[thong];
+struct { float x, y, z; float nx, ny, nz; uint vtx_color <format=hex>; float u, v; int unk_count; } point[count];
+struct { ushort a,b,c; } triangle[thong /(2.f/3)];
