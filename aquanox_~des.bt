@@ -100,7 +100,7 @@ while (cur_offset < end_offset)
         header_t head <optimize=false>;
         head.indent = cur_indent;
 
-        Printf("%*s.\n", cur_indent * 4, "");
+        Printf("%*s.  (stack: %u)\n", cur_indent * 4, "", sav_ind_idx);
 
         sav_ind_idx++;
         cur_indent++;
@@ -138,6 +138,8 @@ while (cur_offset < end_offset)
             {
                 cur_indent--;
             }
+
+            Printf("%*s-  (set stack: %u)\n", cur_indent * 4, "", sav_ind_idx);
     }
     else
     {
