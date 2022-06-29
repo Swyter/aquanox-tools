@@ -12,7 +12,11 @@
 
 LittleEndian();
 
-ushort unk_big_endian_two_head <format=hex>; uint mesh_count;
+struct head_t
+{
+    ushort unk_big_endian_two_head <format=hex>;
+    uint mesh_count;
+} head <open=true>;
 
 struct mesh_t
 {
@@ -21,8 +25,10 @@ struct mesh_t
     struct { float x, y, z; float nx, ny, nz; uint vtx_color <format=hex>; float u, v; int unk_count; } point[count];
     struct { ushort a,b,c,d;  } triangle[ceunt];
     
-    ushort two; uint efff <format=hex>, a; ushort e, seven; float one; char texture_name[9]; float cruft[179/4]; ushort ffa; byte aa;
-} mesh[mesh_count] <optimize=false>;
+    ushort two; uint efff <format=hex>, a; ushort e;
+
+    ushort seven; float one; char texture_name[9]; byte pad[3]; uint cruft[178/4]; ushort ffa;
+} mesh[head.mesh_count] <optimize=false>;
 
 char tail[16];
 
