@@ -90,7 +90,6 @@ local int64 end_offset = FileSize();
 void pop_stack()
 {
     sav_ind_idx--;
-
     cur_indent = sav_indent[sav_ind_idx].indent_level;
 
     sav_indent[sav_ind_idx].prev_equalh = sav_indent[sav_ind_idx + 1].equalh;
@@ -106,7 +105,7 @@ while (cur_offset < end_offset)
     {
         if (sav_indent[sav_ind_idx].equalh == cur_offset && cur_offset != 0)
         {
-            sav_indent[sav_ind_idx].equalh = -1;
+            sav_indent[sav_ind_idx].equalh = -1; /* swy: important; reset this so that we can exit the block at the last entry (where equale is -1), otherwise we'll keep looking for another head at the same level instead of finishing */
             pop_stack();
         }
 
@@ -116,7 +115,7 @@ while (cur_offset < end_offset)
         Printf("%*s.  (set stack: %u -> %u)\n", cur_indent * 4, "", sav_ind_idx, sav_ind_idx + 1);
 
         sav_ind_idx++;
-        cur_indent++;
+        cur_indent++; /* swy: indent before setting the context; as we want to store the indentation for the children elements */
 
         sav_indent[sav_ind_idx].vh     = head.next_subhead_abs_offset;
         sav_indent[sav_ind_idx].equalh = head.next_samelvl_head_abs_offset;
@@ -147,11 +146,9 @@ while (cur_offset < end_offset)
     if (equale == -1 && sav_indent[sav_ind_idx].vh == -1)
     {
             pop_stack();
-            sav_indent[sav_ind_idx].prev_equalh = sav_indent[sav_ind_idx + 1].equalh;
     }
     else
     {
-
         if (prev_offset == cur_offset && sav_indent[sav_ind_idx].equalh != cur_offset)
             break;
     }
