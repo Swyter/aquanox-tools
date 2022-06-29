@@ -27,7 +27,8 @@ struct mesh_t
     
     ushort two; uint efff <format=hex>, a; ushort e;
 
-    ushort seven; float one; char texture_name[9]; byte pad[3]; uint cruft[178/4]; ushort ffa;
+    struct { ushort seven; float one; string texture_name; byte pad[3]; uint cruft[14]; uint zero; ushort ff; } thing[2]<optimize=false>;
+
 } mesh[head.mesh_count] <optimize=false>;
 
 char tail[16];
