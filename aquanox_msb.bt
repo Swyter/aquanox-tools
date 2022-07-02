@@ -40,7 +40,7 @@ struct mesh_t
         char pad[3];
         int series[14]; uint zero; ushort ff;
 
-    } thing[2]<optimize=false>;
+    } thing[2]<optimize=false>; byte p[0x22];
 
 } mesh[head.mesh_count] <optimize=false>;
 
